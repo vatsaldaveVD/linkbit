@@ -12,7 +12,7 @@ function App() {
   }, []);
 
   return (
-    <div style={{ padding: "50px", textAlign: "center" }}>
+    <div style={{ padding: "46px", textAlign: "center" }}>
       <Title>React + Express Boilerplate</Title>
       <Paragraph>{message}</Paragraph>
       <Button type="primary">Click Me</Button>
