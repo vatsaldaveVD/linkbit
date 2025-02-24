@@ -1,0 +1,83 @@
+@import "variables";
+
+/* 🔹 Flexbox Utility */
+@mixin flex-center($direction: row, $gap: 0px) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: $direction;
+  gap: $gap;
+}
+
+/* 🔹 Grid Utility */
+@mixin grid-layout($columns: 2, $gap: 16px) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+/* 🔹 Box Shadow */
+@mixin box-shadow($size: 4px, $opacity: 0.1) {
+  box-shadow: 0 $size $size rgba(0, 0, 0, $opacity);
+}
+
+/* 🔹 Border Radius */
+@mixin border-radius($radius: 8px) {
+  border-radius: $radius;
+}
+
+/* 🔹 Responsive Breakpoints */
+@mixin responsive($device) {
+  @if $device == mobile {
+    @media (max-width: 600px) {
+      @content;
+    }
+  } @else if $device == tablet {
+    @media (max-width: 900px) {
+      @content;
+    }
+  } @else if $device == desktop {
+    @media (min-width: 900px) {
+      @content;
+    }
+  }
+}
+
+/* 🔹 Typography */
+@mixin typography($size, $weight: normal, $lineHeight: 1.5) {
+  font-size: $size;
+  font-weight: $weight;
+  line-height: $lineHeight;
+}
+
+/* 🔹 Button Styles */
+@mixin button($bg-color, $text-color: white) {
+  background-color: $bg-color;
+  color: $text-color;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  @include border-radius(6px);
+
+  &:hover {
+    background-color: darken($bg-color, 10%);
+  }
+}
+
+/* 🔹 Animation */
+@mixin fade-in($duration: 0.5s, $ease: ease-in-out) {
+  animation: fadeIn $duration $ease forwards;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

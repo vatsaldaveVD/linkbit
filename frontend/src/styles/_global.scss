@@ -1,0 +1,123 @@
+@import "variables";
+@import "mixins";
+
+/* 🔹 Reset Styles (Normalize Browser Defaults) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  color: #333;
+  background-color: #f4f4f4;
+  line-height: 1.5;
+}
+
+/* 🔹 Global Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* 🔹 Buttons */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  @include border-radius(6px);
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  color: white;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: $button-secondary;
+  color: white;
+
+  &:hover {
+    background-color: darken($button-secondary, 10%);
+  }
+}
+
+/* 🔹 Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 32px;
+}
+h2 {
+  font-size: 28px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 20px;
+}
+h5 {
+  font-size: 18px;
+}
+h6 {
+  font-size: 16px;
+}
+
+/* 🔹 Utility Classes */
+.flex-center {
+  @include flex-center();
+}
+
+.text-center {
+  text-align: center;
+}
+
+.m-1 {
+  margin: 8px;
+}
+.m-2 {
+  margin: 16px;
+}
+.m-3 {
+  margin: 24px;
+}
+
+.p-1 {
+  padding: 8px;
+}
+.p-2 {
+  padding: 16px;
+}
+.p-3 {
+  padding: 24px;
+}
+
+/* 🔹 Responsive Fixes */
+@include responsive(mobile) {
+  .container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+}
