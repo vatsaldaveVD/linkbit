@@ -6,6 +6,21 @@
   box-sizing: border-box;
 }
 
+:root {
+  font-family: "Nunito", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #fbfbfb;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 img {
   max-width: 100%;
 }
@@ -25,3 +40,244 @@ img {
 
 
 
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  color: #323232;
+  background-color: #fbfbfb;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: 300;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #9067c6;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.subtitle {
+  color: #979797;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+label span,
+.fail {
+  color: #af0f22;
+}
+
+.fail {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+input {
+  border: 1px solid #ccc;
+}
+
+.label-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label-wrapper label {
+  margin-top: 10px;
+}
+
+.password-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.heading {
+  font-weight: 400 !important;
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: 0px;
+}
+
+/*Sign Up*/
+.contain {
+  width: 100vw;
+  display: flex;
+  height: 100vh;
+}
+
+.left-panel,
+.right-panel {
+  width: 50%;
+  height: 100vh;
+}
+
+.contain .left-panel {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10%;
+  background: #fbfbfb;
+}
+
+.form-container {
+  width: 70%;
+}
+
+.eye-icon {
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  color: #757575;
+}
+
+.tooltip-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  color: #888;
+}
+
+.password-requirements {
+  font-size: 12px;
+  color: #777;
+  list-style: none;
+  padding: 0;
+}
+
+.password-requirements li {
+  margin: 5px 0;
+}
+
+.btn-primary {
+  margin-top: 20px;
+  width: 100%;
+}
+
+button:disabled {
+  background: #efefef;
+  cursor: not-allowed;
+}
+
+.right-panel {
+  background: #5a4fcf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sign-in-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #efefef;
+  color: #323232;
+}
+
+.forget-password {
+  margin-top: 20px;
+}
+
+/*Auth*/
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+}
+
+.auth-container h1 {
+  font-size: 40px;
+}
+
+.card {
+  position: relative;
+  max-width: 400px;
+  height: 400px;
+  margin-bottom: 5%;
+}
+
+.auth-receive {
+  margin-top: 20px;
+}
+
+.auth-receive span {
+  margin: 0 10px;
+}
+
+.auth-sign-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.re-sign-btn {
+  align-items: center;
+  justify-items: center;
+}
+
+.reset-btn-wraper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.reset-btn-wraper button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+}
+
+.reset-btn-wraper a {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  margin-top: 0;
+}
