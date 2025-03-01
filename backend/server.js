@@ -18,6 +18,7 @@ dotenv.config();
 const mongoURI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT;
 const REFRESH_SECRET = process.env.REFRESH;
+let refreshTokens = [];
 
 mongoose
   .connect(mongoURI, {})
@@ -42,37 +43,129 @@ const detector = new DeviceDetector({
   maxUserAgentSize: 500,
 });
 
+app.get("/", (req, res) => {
+  res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>URL Shortener</title>
+        </head>
+        <body>
+            <h1>URL Shortener</h1>
+            <form method="POST" action="/shorten">
+                <input type="url" name="url" placeholder="Enter URL" required><br><br>
+                <input type="email" name="userEmail" placeholder="Enter email" required><br><br>
+                <button type="submit">Shorten</button>
+            </form>
+        </body>
+        </html>
+    `);
+});
+
+app.get("/auth_demo", (req, res) => {
+  res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Authentication Demo</title>
+          </head>
+          <body>
+              <h1>Sign Up</h1>
+              <form method="POST" action="/signup">
+                  <label for="signupUsername">Username:</label><br>
+                  <input type="text" id="signupUsername" name="username" value="${
+                    req.query.username || ""
+                  }" required><br><br>
+
+                  <label for="signupEmail">Email:</label><br>
+                  <input type="email" id="signupEmail" name="email" value="${
+                    req.query.email || ""
+                  }" required><br><br>
+
+                  <label for="signupPassword">Password:</label><br>
+                  <input type="password" id="signupPassword" name="password" required><br><br>
+
+                  <button type="submit">Sign Up</button>
+              </form>
+
+              <h1>Login</h1>
+              <form method="POST" action="/login">
+                  <label for="loginUsername">Username or Email:</label><br>
+                  <input type="text" id="loginUsername" name="username" value="${
+                    req.query.username || ""
+                  }" required><br><br>
+
+                <label for="loginPassword">Password:</label><br>
+                <input type="password" id="loginPassword" name="password" required><br><br>
+
+                <button type="submit">Login</button>
+            </form>
+            <h1>Forgot Password</h1>
+            <form method="POST" action="/forgot-password">
+                <label for="forgotPasswordEmail">Email:</label><br>
+                <input type="email" id="forgotPasswordEmail" name="email" required><br><br>
+                <button type="submit">Submit</button>
+            </form>
+            <h1>Reset Password</h1>
+            <form method="POST" action="/reset-password">
+                <label for="resetEmail">Email:</label><br>
+                <input type="email" id="resetEmail" name="email" required><br><br>
+                <label for="resetPassword">New Password:</label><br>
+                <input type="password" id="resetPassword" name="newPassword" required><br><br>
+                <button type="submit">Submit</button>
+            </form>
+            <h1>Update User</h1>
+           <form action="/update-user" method="POST">
+           <input type="hidden" name="token" value="${req.query.token || ""}">
+
+           <label for="updateUsername">Username:</label><br>
+         <input type="text" id="updateUsername" name="username" required><br><br>
+
+    <label for="updateEmail">Email:</label><br>
+    <input type="email" id="updateEmail" name="email" required><br><br>
+
+    <label for="updatePassword">Password:</label><br>
+    <input type="password" id="updatePassword" name="password" required><br><br>
+
+    <button type="submit">Update</button>
+</form>
+        </body>
+        </html>
+    `);
+});
+
 app.post("/signup", async (req, res) => {
   console.log("Signup Request Body:", req.body);
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res
-      .status(400)
-      .json({ error: "Username, email, and password are required" });
+    return res.send("Username, email, and password are required");
   }
 
   try {
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findOne({
+      $or: [{ username: username.toLowerCase() }, { email }],
+    });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists" });
+      return res.send("Username or email already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({
+      username: username.toLowerCase(),
+      email,
+      password: hashedPassword,
+    });
     await newUser.save();
 
-    res.status(201).json({ message: "User created successfully" });
+    res.redirect("/");
   } catch (error) {
-    console.error("Error signing up:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to create user", details: error.message });
+    console.error("Signup Error:", error);
+    res.send("Failed to create user");
   }
 });
 
+// Login Route
 app.post("/login", async (req, res) => {
   console.log("Login Request Body:", req.body);
   const { username, email, password } = req.body;
@@ -121,6 +214,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Refresh tok
 app.post("/refresh", (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken || !refreshTokens.includes(refreshToken)) {
@@ -136,6 +230,70 @@ app.post("/refresh", (req, res) => {
     res.json({ accessToken: newAccessToken });
   });
 });
+
+// Logout Route
+app.post("/logout", (req, res) => {
+  const { refreshToken } = req.body;
+  refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+  res.send("Logged out successfully");
+});
+
+// forgot password
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(404).json({ message: "User doesn't exist" });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User doesn't exist" });
+    res.json({ message: "Reset password link has been sent to your email" });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.send("Failed to send password reset email");
+  }
+});
+
+//reset-password
+app.post("/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Email and new password are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+const authenticateUser = (req, res, next) => {
+  const token =
+    req.body.refreshToken ||
+    req.query.refreshToken ||
+    req.headers["x-access-token"];
+
+  if (!token) return res.status(401).json({ message: "Access denied" });
+
+  try {
+    const verify = jwt.verify(token, JWT_SECRET);
+    req.user = verify;
+    next();
+  } catch (error) {
+    console.error("Authentication Error:", error);
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
 
 app.post("/shorten", async (req, res) => {
   const originalUrl = req.body.url;
@@ -184,6 +342,95 @@ app.post("/shorten", async (req, res) => {
   } catch (error) {
     console.error("Error saving to MongoDB:", error);
     res.status(500).json({ error: "Failed to shorten URL" });
+  }
+});
+
+app.get("/top-performing", async (req, res) => {
+  try {
+    const links = await Link.find({}).sort({ urlHitCount: -1 }).limit(5);
+
+    if (!links || links.length === 0) {
+      return res.status(404).json({ error: "No URLs found for this user" });
+    }
+
+    res.json({ topUrls: links });
+  } catch (error) {
+    console.error("Error fetching top performing links:", error);
+    return res.status(500).json({ error: "Failed to fetch top URLs" });
+  }
+});
+
+app.get("/top-analtytics", async (req, res) => {
+  try {
+    const links = await Link.find({});
+
+    const totalLinks = links.length;
+    const totalClicks = links.reduce((sum, link) => sum + link.urlHitCount, 0);
+
+    const browserCounts = {};
+    const countryCounts = {};
+    const deviceCounts = { smartphone: 0, Tablet: 0, Desktop: 0 };
+
+    links.forEach((link) => {
+      link.analyticLogs.forEach((log) => {
+        browserCounts[log.browser] = (browserCounts[log.browser] || 0) + 1;
+        countryCounts[log.country] = (countryCounts[log.country] || 0) + 1;
+
+        if (log.deviceType) {
+          const deviceType =
+            log.deviceType.charAt(0).toUpperCase() + log.deviceType.slice(1);
+          if (deviceCounts.hasOwnProperty(deviceType)) {
+            deviceCounts[deviceType]++;
+          }
+        }
+      });
+    });
+
+    const timezoneCounts = {};
+    links.forEach((link) => {
+      link.analyticLogs.forEach((log) => {
+        timezoneCounts[log.timezone] = (timezoneCounts[log.timezone] || 0) + 1;
+      });
+    });
+
+    const sortedTimezones = Object.entries(timezoneCounts).sort(
+      (a, b) => b[1] - a[1]
+    );
+
+    const top5Timezones = {};
+    const otherTimezonesCount = sortedTimezones.reduce(
+      (sum, [timezone, count], index) => {
+        if (index < 5) {
+          top5Timezones[timezone] = count;
+          return sum;
+        }
+        return sum + count;
+      },
+      0
+    );
+
+    const timezoneStats = {
+      ...top5Timezones,
+      Others: otherTimezonesCount,
+    };
+
+    const topBrowser =
+      Object.entries(browserCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      "Unknown";
+
+    res.json({
+      basicStats: {
+        "No. of Short Links": totalLinks,
+        "Total no of Click": totalClicks,
+        "Top Browser Use": topBrowser,
+      },
+      countryStats: countryCounts,
+      deviceStats: deviceCounts,
+      "Top Timezone": timezoneStats,
+    });
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
   }
 });
 
@@ -450,62 +697,6 @@ app.delete("/:shortId", async (req, res) => {
     console.error("Error marking URL for deletion:", error);
     res.status(500).json({ error: "Failed to delete URL" });
   }
-});
-
-app.get("/auth_form", (req, res) => {
-  res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-          <title>Authentication Demo</title>
-      </head>
-      <body>
-          <h1>Sign Up</h1>
-          <form method="POST" action="/signup">
-              <label for="signupUsername">Username:</label><br>
-              <input type="text" id="signupUsername" name="username" required><br><br>
-
-              <label for="signupEmail">Email:</label><br>
-              <input type="email" id="signupEmail" name="email" required><br><br>
-
-              <label for="signupPassword">Password:</label><br>
-              <input type="password" id="signupPassword" name="password" required><br><br>
-
-              <button type="submit">Sign Up</button>
-          </form>
-
-          <h1>Login</h1>
-          <form method="POST" action="/login">
-              <label for="loginUsername">Username or Email:</label><br>
-              <input type="text" id="loginUsername" name="username" required><br><br>
-
-              <label for="loginPassword">Password:</label><br>
-              <input type="password" id="loginPassword" name="password" required><br><br>
-
-              <button type="submit">Login</button>
-          </form>
-      </body>
-      </html>
-  `);
-});
-
-app.get("/", (req, res) => {
-  res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>URL Shortener</title>
-        </head>
-        <body>
-            <h1>URL Shortener</h1>
-            <form method="POST" action="/shorten">
-                <input type="url" name="url" placeholder="Enter URL" required><br><br>
-                <input type="email" name="userEmail" placeholder="Enter email" required><br><br>
-                <button type="submit">Shorten</button>
-            </form>
-        </body>
-        </html>
-    `);
 });
 
 app.listen(port, () => {
