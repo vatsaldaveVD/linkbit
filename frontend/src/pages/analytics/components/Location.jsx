@@ -33,7 +33,7 @@ const Location = () => {
   };
 
   return (
-    <Card title="LOCATION" variant="borderless" style={{ height: "100%" }}>
+    <Card title="Location" variant="borderless" style={{ height: "100%" }}>
       <Chart
         chartEvents={[
           {

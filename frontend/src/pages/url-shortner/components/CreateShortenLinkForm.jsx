@@ -1,17 +1,14 @@
-import { Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
 import { Copy } from "lucide-react";
+import useClipboard from "../../../shared/utils/hooks/useClipboard";
 
 const CreateShortenLinkForm = () => {
   const prefixUrl = "link.it/";
   const [form] = Form.useForm();
-  const [messageApi, contextHolder] = message.useMessage();
+  const { copyToClipboard, contextHolder } = useClipboard();
 
   const copyShortLink = () => {
-    navigator.clipboard.writeText(prefixUrl + form.getFieldValue("shortUrl"));
-    messageApi.open({
-      type: "success",
-      content: "Copied to clipboard",
-    });
+    copyToClipboard(prefixUrl + form.getFieldValue("shortUrl"));
   };
 
   return (
@@ -25,11 +22,11 @@ const CreateShortenLinkForm = () => {
           <Input
             addonBefore={prefixUrl}
             addonAfter={
-              <Copy
-                size={16}
+              <Button
                 onClick={copyShortLink}
-                color="#a1a1a1"
-                cursor="pointer"
+                type="text"
+                size="small"
+                icon={<Copy size={16} cursor="pointer" />}
               />
             }
             placeholder="hkyof"

@@ -13,6 +13,7 @@ import PassResetDone from "../pages/PassResetDone";
 
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 const UrlShortner = lazy(() => import("../pages/url-shortner/UrlShortner"));
+const Analytics = lazy(() => import("../pages/analytics/Analytics"));
 
 const appRoutes = createBrowserRouter(
   createRoutesFromElements(
@@ -23,6 +24,7 @@ const appRoutes = createBrowserRouter(
       <Route path="/password-reset-done" element={<PassResetDone />} />
       <Route index element={<Dashboard />} /> {/* Default route */}
       <Route path="url-shortner" element={<UrlShortner />} />
+      <Route path="url-shortner/:id" element={<Analytics />} />
     </Route>
   )
 );
