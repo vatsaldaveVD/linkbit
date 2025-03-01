@@ -8,6 +8,8 @@ const UAParser = require("ua-parser-js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const DeviceDetector = require("node-device-detector");
+const ct = require("countries-and-timezones");
 
 const app = express();
 const PORT = process.env.PORT || 5050;
@@ -31,6 +33,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(requestIp.mw());
 app.use(require("cors")());
+const detector = new DeviceDetector({
+  clientIndexes: true,
+  deviceIndexes: true,
+  deviceAliasCode: false,
+  deviceTrusted: false,
+  deviceInfo: false,
+  maxUserAgentSize: 500,
+});
 
 app.post("/signup", async (req, res) => {
   console.log("Signup Request Body:", req.body);
@@ -63,7 +73,6 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// Login Route
 app.post("/login", async (req, res) => {
   console.log("Login Request Body:", req.body);
   const { username, email, password } = req.body;
@@ -112,7 +121,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Refresh token
 app.post("/refresh", (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken || !refreshTokens.includes(refreshToken)) {
@@ -131,9 +139,16 @@ app.post("/refresh", (req, res) => {
 
 app.post("/shorten", async (req, res) => {
   const originalUrl = req.body.url;
+  const userId = req.body.userEmail;
+  const bodyShortId = req.body.shortId;
 
   if (!originalUrl) {
     return res.status(400).json({ error: "URL is required" });
+  }
+  if (!userId) {
+    return res
+      .status(400)
+      .json({ error: "useremail required to create shorl URL" });
   }
 
   try {
@@ -145,12 +160,14 @@ app.post("/shorten", async (req, res) => {
   let shortId;
   let linkExists;
 
-  do {
-    shortId = shortid.generate();
-    linkExists = await Link.findOne({
-      shortUrl: `${req.protocol}://${req.get("host")}/${shortId}`,
-    });
-  } while (linkExists);
+  if (!bodyShortId) {
+    do {
+      shortId = shortid.generate();
+      linkExists = await Link.findOne({
+        shortUrl: `${req.protocol}://${req.get("host")}/${shortId}`,
+      });
+    } while (linkExists);
+  }
 
   const shortUrl = `${req.protocol}://${req.get("host")}/${shortId}`;
 
@@ -158,6 +175,7 @@ app.post("/shorten", async (req, res) => {
     const newLink = new Link({
       originalUrl,
       shortUrl,
+      createdBy: userId,
       urlHitCount: 0,
     });
     await newLink.save();
@@ -166,6 +184,103 @@ app.post("/shorten", async (req, res) => {
   } catch (error) {
     console.error("Error saving to MongoDB:", error);
     res.status(500).json({ error: "Failed to shorten URL" });
+  }
+});
+
+app.get("/top-performing/:userEmail", async (req, res) => {
+  const userEmail = req.params.userEmail;
+
+  if (!userEmail) {
+    return res.status(400).json({ error: "User email is required" });
+  }
+
+  try {
+    const links = await Link.find({ createdBy: userEmail })
+      .sort({ urlHitCount: -1 })
+      .limit(5);
+
+    if (!links || links.length === 0) {
+      return res.status(404).json({ error: "No URLs found for this user" });
+    }
+
+    res.json({ topUrls: links });
+  } catch (error) {
+    console.error("Error fetching top performing links:", error);
+    return res.status(500).json({ error: "Failed to fetch top URLs" });
+  }
+});
+
+app.get("/top-analtytics/:userEmail", async (req, res) => {
+  try {
+    const links = await Link.find({ createdBy: req.params.userEmail });
+
+    const totalLinks = links.length;
+    const totalClicks = links.reduce((sum, link) => sum + link.urlHitCount, 0);
+
+    const browserCounts = {};
+    const countryCounts = {};
+    const deviceCounts = { smartphone: 0, Tablet: 0, Desktop: 0 };
+
+    links.forEach((link) => {
+      link.analyticLogs.forEach((log) => {
+        browserCounts[log.browser] = (browserCounts[log.browser] || 0) + 1;
+        countryCounts[log.country] = (countryCounts[log.country] || 0) + 1;
+
+        if (log.deviceType) {
+          const deviceType =
+            log.deviceType.charAt(0).toUpperCase() + log.deviceType.slice(1);
+          if (deviceCounts.hasOwnProperty(deviceType)) {
+            deviceCounts[deviceType]++;
+          }
+        }
+      });
+    });
+
+    const timezoneCounts = {};
+    links.forEach((link) => {
+      link.analyticLogs.forEach((log) => {
+        timezoneCounts[log.timezone] = (timezoneCounts[log.timezone] || 0) + 1;
+      });
+    });
+
+    const sortedTimezones = Object.entries(timezoneCounts).sort(
+      (a, b) => b[1] - a[1]
+    );
+
+    const top5Timezones = {};
+    const otherTimezonesCount = sortedTimezones.reduce(
+      (sum, [timezone, count], index) => {
+        if (index < 5) {
+          top5Timezones[timezone] = count;
+          return sum;
+        }
+        return sum + count;
+      },
+      0
+    );
+
+    const timezoneStats = {
+      ...top5Timezones,
+      Others: otherTimezonesCount,
+    };
+
+    const topBrowser =
+      Object.entries(browserCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      "Unknown";
+
+    res.json({
+      basicStats: {
+        "No. of Short Links": totalLinks,
+        "Total no of Click": totalClicks,
+        "Top Browser Use": topBrowser,
+      },
+      countryStats: countryCounts,
+      deviceStats: deviceCounts,
+      "Top Timezone": timezoneStats,
+    });
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
   }
 });
 
@@ -188,6 +303,40 @@ app.get("/analytics/:shortId", async (req, res) => {
   }
 });
 
+app.get("/links/:userEmail", async (req, res) => {
+  const userEmail = req.params.userEmail;
+  const page = parseInt(req.query.page) || 1; // Default to first page
+  const limit = 10;
+
+  if (!userEmail) {
+    return res.status(400).json({ error: "User email is required" });
+  }
+
+  try {
+    const totalDocs = await Link.countDocuments({ createdBy: userEmail });
+    const totalPages = Math.ceil(totalDocs / limit);
+
+    const links = await Link.find({ createdBy: userEmail })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (!links || links.length === 0) {
+      return res.status(404).json({ error: "No URLs found for this user" });
+    }
+
+    res.json({
+      urls: links,
+      currentPage: page,
+      totalPages: totalPages,
+      totalItems: totalDocs,
+    });
+  } catch (error) {
+    console.error("Error fetching user links:", error);
+    return res.status(500).json({ error: "Failed to fetch URLs" });
+  }
+});
+
+// Get shortId
 app.get("/shortId", async (req, res) => {
   do {
     shortId = shortid.generate();
@@ -211,31 +360,29 @@ app.get("/:shortId", async (req, res) => {
       return res.status(404).json({ error: "Short URL not found", url: url });
     }
 
-    link.accessCount++;
+    link.urlHitCount++;
 
     const userAgent = useragent.parse(req.headers["user-agent"]);
+    const result = detector.detect(req.headers["user-agent"]);
+    console.log("Result Parse: ", result);
     const ip = req.clientIp;
     const geo = geoip.lookup(ip);
     const parser = new UAParser(req.headers["user-agent"]);
     const browser = parser.getBrowser();
     const os = parser.getOS();
-    const device = parser.getDevice();
-    const engine = parser.getEngine();
-    const cpu = parser.getCPU();
 
     link.analyticLogs.push({
-      timezone: geo.timezone,
+      timezone:
+        `UTC ${ct.getTimezone(geo.timezone).utcOffsetStr}` || geo.timezone,
       ipAddress: ip,
       country: geo ? geo.country : "Unknown",
       referer: req.headers.referer || "Unknown",
-      browser: browser.name || "Unknown",
-      browserVersion: browser.version || "Unknown",
-      os: os.name || userAgent.os.family || "Unknown",
-      osVersion: os.version || "Unknown",
-      device: device.model || "Unknown",
-      deviceType: device.type || "Unknown",
-      engine: engine.name || "Unknown",
-      architecture: cpu.architecture || "Unknown",
+      browser: result.client.name || browser.name || "Unknown",
+      browserVersion: result.client.version || browser.version || "Unknown",
+      os: result.os.name || os.name || userAgent.os.family || "Unknown",
+      osVersion: result.os.version || os.version || "Unknown",
+      deviceModel: result.device.model || "Unknown",
+      deviceType: result.device.type || "Unknown",
     });
 
     await link.save();
@@ -243,6 +390,39 @@ app.get("/:shortId", async (req, res) => {
   } catch (error) {
     console.error("Error fetching/updating from MongoDB:", error);
     res.status(500).json({ error: "Failed to redirect" });
+  }
+});
+
+app.put("/:shortId", async (req, res) => {
+  const shortId = req.params.shortId;
+  const newUrl = req.body;
+
+  if (!newUrl) {
+    return res.status(400).json({ error: "New URL is required" });
+  }
+
+  try {
+    new URL(newUrl);
+  } catch (error) {
+    return res.status(400).json({ error: "Invalid URL format" });
+  }
+
+  try {
+    const link = await Link.findOne({
+      shortUrl: `${req.protocol}://${req.get("host")}/${shortId}`,
+    });
+
+    if (!link) {
+      return res.status(404).json({ error: "Short URL not found" });
+    }
+
+    link.originalUrl = newUrl;
+    await link.save();
+
+    res.json({ message: "URL updated successfully", newUrl: link.originalUrl });
+  } catch (error) {
+    console.error("Error updating URL:", error);
+    res.status(500).json({ error: "Failed to update URL" });
   }
 });
 
@@ -319,7 +499,8 @@ app.get("/", (req, res) => {
         <body>
             <h1>URL Shortener</h1>
             <form method="POST" action="/shorten">
-                <input type="url" name="url" placeholder="Enter URL" required>
+                <input type="url" name="url" placeholder="Enter URL" required><br><br>
+                <input type="email" name="userEmail" placeholder="Enter email" required><br><br>
                 <button type="submit">Shorten</button>
             </form>
         </body>
@@ -327,4 +508,6 @@ app.get("/", (req, res) => {
     `);
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});

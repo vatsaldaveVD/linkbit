@@ -22,17 +22,21 @@ const analyticLogsSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    browserVersion: {
+      type: String,
+      required: false,
+    },
     os: {
       type: String,
       required: true,
     },
-    version: {
+    osVersion: {
       type: String,
       required: false,
     },
-    device: {
+    deviceModel: {
       type: String,
-      required: true,
+      required: false,
     },
     deviceType: {
       type: String,
@@ -51,6 +55,10 @@ const analyticLogsSchema = new mongoose.Schema(
 
 const linkSchema = new mongoose.Schema(
   {
+    createdBy: {
+      type: String,
+      required: false,
+    },
     originalUrl: {
       type: String,
       required: true,
