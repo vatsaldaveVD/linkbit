@@ -6,7 +6,7 @@
   box-sizing: border-box;
 }
 
-:root {
+/* :root {
   font-family: "Nunito", sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -19,7 +19,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */
 
 img {
   max-width: 100%;
@@ -40,7 +40,7 @@ img {
 
 
 
-body {
+/* body {
   margin: 0;
   display: flex;
   place-items: center;
@@ -134,10 +134,10 @@ input {
   font-size: 40px;
   line-height: 44px;
   letter-spacing: 0px;
-}
+} */
 
 /*Sign Up*/
-.contain {
+/* .contain {
   width: 100vw;
   display: flex;
   height: 100vh;
@@ -216,11 +216,11 @@ button:disabled {
 
 .forget-password {
   margin-top: 20px;
-}
+} */
 
 /*Auth*/
 
-.auth-container {
+/* .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -280,4 +280,4 @@ button:disabled {
   align-items: center;
   width: 50%;
   margin-top: 0;
-}
+} */
