@@ -97,13 +97,12 @@ const UrlShortner = () => {
     length: 0,
   }).map((_, i) => ({
     key: i,
-    longUrl: `app.startinfinity.com/b/7KN ${i}`,
+    longUrl: `app.startinfinity.com/b/7KN${i}`,
     shortUrl: `link.joy/hkyof`,
     clicks: 20,
     tags: ["Designing"],
     analytics: `hkyof-${i}`,
   }));
-
 
   return (
     <>

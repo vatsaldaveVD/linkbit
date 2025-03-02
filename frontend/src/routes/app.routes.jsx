@@ -22,7 +22,7 @@ const appRoutes = createBrowserRouter(
       <Route path="/login" element={<SignIn />} />
       <Route path="/password-reset" element={<PassReset />} />
       <Route path="/password-reset-done" element={<PassResetDone />} />
-      <Route index element={<Dashboard />} /> {/* Default route */}
+      <Route path="/dashboard" element={<Dashboard />} /> {/* Default route */}
       <Route path="url-shortner" element={<UrlShortner />} />
       <Route path="url-shortner/:id" element={<Analytics />} />
     </Route>
