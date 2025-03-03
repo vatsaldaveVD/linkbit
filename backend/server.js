@@ -12,6 +12,7 @@ const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const urlMetadata = require("url-metadata");
 
 const app = express();
 dotenv.config();
@@ -324,6 +325,26 @@ app.post("/shorten", async (req, res) => {
 
   try {
     new URL(originalUrl);
+    if (Object.keys(metadata).length === 0) {
+      try {
+        const meta = await urlMetadata(originalUrl);
+        metadata = {
+          title: meta.title,
+          description: meta.description,
+          image: meta.image,
+          keywords: meta.keywords,
+          "og:image": meta["og:image"],
+          "og:title": meta["og:title"],
+          "og:description": meta["og:description"],
+        };
+
+        metadata = Object.fromEntries(
+          Object.entries(metadata).filter(([_, v]) => v != null)
+        );
+      } catch (metadataFetchError) {
+        console.error("Error fetching metadata:", metadataFetchError);
+      }
+    }
   } catch (error) {
     return res.status(400).json({ error: "Invalid URL" });
   }
