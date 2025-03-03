@@ -11,6 +11,7 @@ const dotenv = require("dotenv");
 const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
 const urlMetadata = require("url-metadata");
+const getMetaData = require("metadata-scraper");
 
 const app = express();
 dotenv.config();
@@ -306,7 +307,7 @@ app.post("/shorten", async (req, res) => {
   const originalUrl = req.body.url;
   const userId = req.body.userEmail;
   const bodyShortId = req.body.shortId;
-  const metadata = req.body.metadata || {};
+  var metadata = req.body.metadata || {};
 
   if (!originalUrl) {
     return res.status(400).json({ error: "URL is required" });
@@ -321,21 +322,12 @@ app.post("/shorten", async (req, res) => {
     new URL(originalUrl);
     if (Object.keys(metadata).length === 0) {
       try {
-        const meta = await urlMetadata(originalUrl);
-        metadata = {
-          title: meta.title,
-          description: meta.description,
-          image: meta.image,
-          keywords: meta.keywords,
-          "og:image": meta["og:image"],
-          "og:title": meta["og:title"],
-          "og:description": meta["og:description"],
-        };
-
+        const meta = await getMetaData(originalUrl);
         metadata = Object.fromEntries(
-          Object.entries(metadata).filter(([_, v]) => v != null)
+          Object.entries(meta).filter(([_, v]) => v != null)
         );
-      } catch (metadataFetchError) {
+        console.log(metadata);
+      } catch (metadataFetcewMethError) {
         console.error("Error fetching metadata:", metadataFetchError);
       }
     }
@@ -365,6 +357,7 @@ app.post("/shorten", async (req, res) => {
       urlHitCount: 0,
       metadata: metadata,
     });
+    console.log(newLink);
     await newLink.save();
 
     res.json({ shortUrl });
