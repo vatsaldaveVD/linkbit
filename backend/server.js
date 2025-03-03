@@ -320,19 +320,20 @@ app.post("/shorten", async (req, res) => {
 
   try {
     new URL(originalUrl);
-    if (Object.keys(metadata).length === 0) {
-      try {
-        const meta = await getMetaData(originalUrl);
-        metadata = Object.fromEntries(
-          Object.entries(meta).filter(([_, v]) => v != null)
-        );
-        console.log(metadata);
-      } catch (metadataFetcewMethError) {
-        console.error("Error fetching metadata:", metadataFetchError);
-      }
-    }
   } catch (error) {
     return res.status(400).json({ error: "Invalid URL" });
+  }
+
+  if (Object.keys(metadata).length === 0) {
+    try {
+      const meta = await getMetaData(originalUrl);
+      metadata = Object.fromEntries(
+        Object.entries(meta).filter(([_, v]) => v != null)
+      );
+      console.log(metadata);
+    } catch (metadataFetcewMethError) {
+      console.error("Error fetching metadata:", metadataFetchError);
+    }
   }
 
   let shortId;
