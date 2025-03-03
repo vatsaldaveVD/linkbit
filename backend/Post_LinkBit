@@ -1,0 +1,355 @@
+{
+    "info": {
+        "_postman_id": "79bfb275-eef0-4e35-89dd-68fd0630d91c",
+        "name": "MongoDB CRUD",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "SignUP",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/signup",
+                    "path": [
+                        "signup"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"name\":\"Adasdsaf\",\n  \"email\":\"archpatel10asdf@gmail.com\",\n  \"password\":\"12345678\"\n}"
+                }
+            }
+        },
+        {
+            "name": "Login",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/login",
+                    "path": [
+                        "login"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"email\":\"archpatel10asdf@gmail.com\",\n  \"password\":\"12345678\"\n}"
+                }
+            }
+        },
+        {
+            "name": "User Links",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/links/",
+                    "path": [
+                        "links"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "User Dashboard Anaytics  ",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/top-analtytics/",
+                    "path": [
+                        "top-analtytics"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Get Unique Short ID",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/shortId",
+                    "path": [
+                        "shortId"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzM5MjksImV4cCI6MTc0MTAzNDgyOX0.e7wqfF8tIBnP_gzF3-y_2V3Ocsz6wMEu0n4I7q9mEBQ"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "User Top Performing Url",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/top-performing",
+                    "path": [
+                        "top-performing"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Analytics of Single Short URL",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/analytics/as",
+                    "path": [
+                        "analytics",
+                        "as"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzM5MjksImV4cCI6MTc0MTAzNDgyOX0.e7wqfF8tIBnP_gzF3-y_2V3Ocsz6wMEu0n4I7q9mEBQ"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Final Product",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/shortIdasd",
+                    "path": [
+                        "shortIdasd"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                }
+            }
+        },
+        {
+            "name": "Update Short URL",
+            "request": {
+                "method": "PUT",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/shortIdasd",
+                    "path": [
+                        "shortIdasd"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"newURL\":\"newURL\"\n}"
+                }
+            }
+        },
+        {
+            "name": "Delete Short URL",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/shortIdasd",
+                    "path": [
+                        "shortIdasd"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Create Short Link",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/createShortLink",
+                    "path": [
+                        "createShortLink"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"url\":\"\",\n  \"shortId\":\"\"\n}"
+                }
+            }
+        },
+        {
+            "name": "System Top Performing URLs",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/system-top-performing",
+                    "path": [
+                        "system-top-performing"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                }
+            }
+        },
+        {
+            "name": "System Analtytics",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:3000/system-top-analtytics",
+                    "path": [
+                        "system-top-analtytics"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "3000"
+                }
+            }
+        }
+    ]
+}

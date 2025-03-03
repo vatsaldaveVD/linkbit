@@ -10,8 +10,7 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
-const swaggerUi = require("swagger-ui-express");
-// const swaggerJsdoc = require("swagger-jsdoc");
+
 const urlMetadata = require("url-metadata");
 
 const app = express();
@@ -46,21 +45,7 @@ const detector = new DeviceDetector({
   maxUserAgentSize: 500,
 });
 
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "URL Shortener API",
-      version: "1.0.0",
-      description: "API for shortening URLs and managing analytics",
-    },
-  },
-  apis: ["./index.js"],
-};
-
-// const specs = swaggerJsdoc(options);
-// app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
-
+// Done
 app.post("/signup", async (req, res) => {
   console.log("Signup Request Body:", req.body);
   const { name, email, password } = req.body;
@@ -85,13 +70,14 @@ app.post("/signup", async (req, res) => {
     });
     await newUser.save();
 
-    res.redirect("/");
+    res.redirect("/login");
   } catch (error) {
     console.error("Signup Error:", error);
     res.send("Failed to create user");
   }
 });
 
+// Done
 app.post("/login", async (req, res) => {
   console.log("Login Request Body:", req.body);
   const { email, password } = req.body;
@@ -193,17 +179,18 @@ app.post("/reset-password", async (req, res) => {
   }
 });
 
-const authenticateUser = (req, res, next) => {
-  const token =
-    req.body.refreshToken ||
-    req.query.refreshToken ||
-    req.headers["x-access-token"];
+const authenticateUser = async (req, res, next) => {
+  const token = req.headers["authorization"];
 
   if (!token) return res.status(401).json({ message: "Access denied" });
 
   try {
     const verify = jwt.verify(token, JWT_SECRET);
-    req.user = verify;
+    const user = await User.findById(verify.userId);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    req.user = { userId: user.email };
     next();
   } catch (error) {
     console.error("Authentication Error:", error);
@@ -211,9 +198,9 @@ const authenticateUser = (req, res, next) => {
   }
 };
 
-app.post("/shorten", async (req, res) => {
+app.post("/createShortLink", authenticateUser, async (req, res) => {
   const originalUrl = req.body.url;
-  const userId = req.body.userEmail;
+  const userId = req.user.userId;
   const bodyShortId = req.body.shortId;
   const metadata = req.body.metadata || {};
 
@@ -262,6 +249,8 @@ app.post("/shorten", async (req, res) => {
         shortUrl: `${req.protocol}://${req.get("host")}/${shortId}`,
       });
     } while (linkExists);
+  } else {
+    shortId = bodyShortId;
   }
 
   const shortUrl = `${req.protocol}://${req.get("host")}/${shortId}`;
@@ -283,7 +272,7 @@ app.post("/shorten", async (req, res) => {
   }
 });
 
-app.get("/top-performing", async (req, res) => {
+app.get("/system-top-performing", async (req, res) => {
   try {
     const links = await Link.find({}).sort({ urlHitCount: -1 }).limit(5);
 
@@ -298,7 +287,7 @@ app.get("/top-performing", async (req, res) => {
   }
 });
 
-app.get("/top-analtytics", async (req, res) => {
+app.get("/system-top-analtytics", async (req, res) => {
   try {
     const links = await Link.find({});
 
@@ -372,8 +361,9 @@ app.get("/top-analtytics", async (req, res) => {
   }
 });
 
-app.get("/top-performing/:userEmail", async (req, res) => {
-  const userEmail = req.params.userEmail;
+// Done
+app.get("/top-performing/", authenticateUser, async (req, res) => {
+  const userEmail = req.user.userId;
 
   if (!userEmail) {
     return res.status(400).json({ error: "User email is required" });
@@ -395,9 +385,9 @@ app.get("/top-performing/:userEmail", async (req, res) => {
   }
 });
 
-app.get("/top-analtytics/:userEmail", async (req, res) => {
+app.get("/top-analtytics/", authenticateUser, async (req, res) => {
   try {
-    const userEmail = req.params.userEmail;
+    const userEmail = req.user.userId;
 
     if (!userEmail) {
       return res.status(400).json({ error: "User email is required" });
@@ -474,8 +464,9 @@ app.get("/top-analtytics/:userEmail", async (req, res) => {
   }
 });
 
-app.get("/analytics/:shortId", async (req, res) => {
+app.get("/analytics/:shortId", authenticateUser, async (req, res) => {
   const shortId = req.params.shortId;
+  const userId = req.user.userId;
 
   try {
     const link = await Link.findOne({
@@ -486,6 +477,10 @@ app.get("/analytics/:shortId", async (req, res) => {
       return res.status(404).json({ error: "Short URL not found" });
     }
 
+    if (!(userId == link.createdBy)) {
+      return res.status(401).json({ error: "Unauthorized User" });
+    }
+
     res.json({ analytics: link.analyticLogs });
   } catch (error) {
     console.error("Error fetching from MongoDB:", error);
@@ -493,8 +488,8 @@ app.get("/analytics/:shortId", async (req, res) => {
   }
 });
 
-app.get("/links/:userEmail", async (req, res) => {
-  const userEmail = req.params.userEmail;
+app.get("/links/", authenticateUser, async (req, res) => {
+  const userEmail = req.user.userId;
   const page = parseInt(req.query.page) || 1; // Default to first page
   const limit = 10;
 
@@ -526,7 +521,7 @@ app.get("/links/:userEmail", async (req, res) => {
   }
 });
 
-app.get("/shortId", async (req, res) => {
+app.get("/shortId", authenticateUser, async (req, res) => {
   do {
     shortId = shortid.generate();
     linkExists = await Link.findOne({
@@ -585,9 +580,11 @@ app.get("/:shortId", async (req, res) => {
   }
 });
 
-app.put("/:shortId", async (req, res) => {
+app.put("/:shortId", authenticateUser, async (req, res) => {
   const shortId = req.params.shortId;
-  const newUrl = req.body;
+  const newUrl = req.body.newURL;
+  let metadata = req.body.metadata || {};
+  const userId = req.user.userId;
 
   if (!newUrl) {
     return res.status(400).json({ error: "New URL is required" });
@@ -608,7 +605,32 @@ app.put("/:shortId", async (req, res) => {
       return res.status(404).json({ error: "Short URL not found" });
     }
 
+    if (!(userId == link.createdBy)) {
+      return res.status(401).json({ error: "Unauthorized User" });
+    }
+
     link.originalUrl = newUrl;
+    if (Object.keys(metadata).length === 0) {
+      try {
+        const meta = await urlMetadata(originalUrl);
+        metadata = {
+          title: meta.title,
+          description: meta.description,
+          image: meta.image,
+          keywords: meta.keywords,
+          "og:image": meta["og:image"],
+          "og:title": meta["og:title"],
+          "og:description": meta["og:description"],
+        };
+
+        metadata = Object.fromEntries(
+          Object.entries(metadata).filter(([_, v]) => v != null)
+        );
+        link.metadata = metadata;
+      } catch (metadataFetchError) {
+        console.error("Error fetching metadata:", metadataFetchError);
+      }
+    }
     await link.save();
 
     res.json({ message: "URL updated successfully", newUrl: link.originalUrl });
@@ -618,8 +640,9 @@ app.put("/:shortId", async (req, res) => {
   }
 });
 
-app.delete("/:shortId", async (req, res) => {
+app.delete("/:shortId", authenticateUser, async (req, res) => {
   const shortId = req.params.shortId;
+  const userId = req.user.userId;
 
   try {
     const link = await Link.findOne({
@@ -632,6 +655,9 @@ app.delete("/:shortId", async (req, res) => {
 
     if (link.deletedAt) {
       return res.status(400).json({ error: "Short URL already deleted" });
+    }
+    if (!(userId == link.createdBy)) {
+      return res.status(401).json({ error: "Unauthorized User" });
     }
 
     link.deletedAt = new Date();

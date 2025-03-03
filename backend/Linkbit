@@ -1,0 +1,203 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "MongoDB CRUD",
+    "collectionId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+    "dateExported": "2025-03-03T20:59:36.926Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "2b838f3d-ede4-4dae-a877-c447f4e38679",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "SignUP",
+            "url": "http://127.0.0.1:3000/signup",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2025-02-23T17:08:55.001Z",
+            "modified": "2025-03-03T20:07:42.831Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\":\"Adasdsaf\",\n  \"email\":\"archpatel10asdf@gmail.com\",\n  \"password\":\"12345678\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "7815ed61-9229-498e-8097-9842e6bb158a",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Login",
+            "url": "http://127.0.0.1:3000/login",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2025-03-03T20:14:23.503Z",
+            "modified": "2025-03-03T20:14:30.790Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\":\"archpatel10asdf@gmail.com\",\n  \"password\":\"12345678\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "426d1a99-73cb-4a86-8c07-9850711c79dc",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "User Links",
+            "url": "http://127.0.0.1:3000/links/",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2025-03-03T20:19:43.524Z",
+            "modified": "2025-03-03T20:29:45.418Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                }
+            ]
+        },
+        {
+            "_id": "ff0160bf-91cf-4d84-940a-5a6fa636eb09",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "User Dashboard Anaytics  ",
+            "url": "http://127.0.0.1:3000/top-analtytics/",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2025-03-03T20:25:22.582Z",
+            "modified": "2025-03-03T20:27:55.125Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                }
+            ]
+        },
+        {
+            "_id": "dc5b33ce-7525-4139-9e4a-dd80840bb72b",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Get Unique Short ID",
+            "url": "http://127.0.0.1:3000/shortId",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2025-03-03T20:30:41.771Z",
+            "modified": "2025-03-03T20:32:21.743Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzM5MjksImV4cCI6MTc0MTAzNDgyOX0.e7wqfF8tIBnP_gzF3-y_2V3Ocsz6wMEu0n4I7q9mEBQ"
+                }
+            ]
+        },
+        {
+            "_id": "a6f0bb15-38bd-4ba1-932b-c8930ed41916",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "User Top Performing Url",
+            "url": "http://127.0.0.1:3000/top-performing",
+            "method": "GET",
+            "sortNum": 50000,
+            "created": "2025-03-03T20:28:07.602Z",
+            "modified": "2025-03-03T20:28:28.158Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                }
+            ]
+        },
+        {
+            "_id": "2bb53ad7-5b11-465e-af05-c42a8eec2d21",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Analytics of Single Short URL",
+            "url": "http://127.0.0.1:3000/analytics/as",
+            "method": "GET",
+            "sortNum": 50000,
+            "created": "2025-03-03T20:33:40.661Z",
+            "modified": "2025-03-03T20:34:09.697Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzM5MjksImV4cCI6MTc0MTAzNDgyOX0.e7wqfF8tIBnP_gzF3-y_2V3Ocsz6wMEu0n4I7q9mEBQ"
+                }
+            ]
+        },
+        {
+            "_id": "5dbe888f-cf8b-445e-887e-f7eefe4b2fcc",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Final Product",
+            "url": "http://127.0.0.1:3000/shortIdasd",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2025-03-03T20:42:10.395Z",
+            "modified": "2025-03-03T20:42:10.395Z",
+            "headers": []
+        },
+        {
+            "_id": "df2daf83-1c07-4a06-8036-6a33debdbb01",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Update Short URL",
+            "url": "http://127.0.0.1:3000/shortIdasd",
+            "method": "PUT",
+            "sortNum": 70000,
+            "created": "2025-03-03T20:50:24.578Z",
+            "modified": "2025-03-03T20:54:17.723Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"newURL\":\"newURL\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "3ab6b042-637d-456c-a746-d9bf7bbcfa64",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Delete Short URL",
+            "url": "http://127.0.0.1:3000/shortIdasd",
+            "method": "DELETE",
+            "sortNum": 80000,
+            "created": "2025-03-03T20:53:36.981Z",
+            "modified": "2025-03-03T20:54:56.183Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                }
+            ]
+        },
+        {
+            "_id": "6b3eb6df-7a30-4583-91f1-28ee68d67022",
+            "colId": "68ca483f-5793-452c-a7d5-a59e514d2c10",
+            "containerId": "",
+            "name": "Create Short Link",
+            "url": "http://127.0.0.1:3000/createShortLink",
+            "method": "POST",
+            "sortNum": 90000,
+            "created": "2025-03-03T20:57:57.592Z",
+            "modified": "2025-03-03T20:57:57.592Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M2MGNhMmI5ZDZiM2ViOTExMGRlZTMiLCJpYXQiOjE3NDEwMzI5MzYsImV4cCI6MTc0MTAzMzgzNn0.Xr5MITHrG0KYYaGXYJY3xvYveZmKFkkBmgPBDitUumU"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"url\":\"\",\n  \"shortId\":\"\"\n}",
+                "form": []
+            }
+        }
+    ],
+    "ref": "-HwvC38HAC4DG_7ohuJaXykPvvNCZHL_uvrwJKyiARIC8r8GUQm9w-OBvA3R2WaGBgQYfHUhsP9nJTD6AV7RaQ"
+}
