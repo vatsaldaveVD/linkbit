@@ -2,7 +2,7 @@ import { Button, Form, Input } from "antd";
 import { Copy } from "lucide-react";
 import useClipboard from "../../../shared/utils/hooks/useClipboard";
 
-const CreateShortenLinkForm = () => {
+const CreateShortenLinkForm = ({ urlSlug }) => {
   const prefixUrl = "link.it/";
   const [form] = Form.useForm();
   const { copyToClipboard, contextHolder } = useClipboard();
@@ -29,7 +29,7 @@ const CreateShortenLinkForm = () => {
                 icon={<Copy size={16} cursor="pointer" />}
               />
             }
-            placeholder="hkyof"
+            placeholder={urlSlug}
           />
         </Form.Item>
       </Form>

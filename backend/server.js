@@ -11,14 +11,13 @@ const dotenv = require("dotenv");
 const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
 const swaggerUi = require("swagger-ui-express");
-const swaggerJsdoc = require("swagger-jsdoc");
+// const swaggerJsdoc = require("swagger-jsdoc");
 const urlMetadata = require("url-metadata");
 
 const app = express();
-const port = process.env.PORT || 5050;
 dotenv.config();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5050;
 const mongoURI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT;
 const REFRESH_SECRET = process.env.REFRESH;
@@ -59,8 +58,8 @@ const options = {
   apis: ["./index.js"],
 };
 
-const specs = swaggerJsdoc(options);
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+// const specs = swaggerJsdoc(options);
+// app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.post("/signup", async (req, res) => {
   console.log("Signup Request Body:", req.body);

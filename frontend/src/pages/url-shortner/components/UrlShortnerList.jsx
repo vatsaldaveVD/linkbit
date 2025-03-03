@@ -4,13 +4,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import UiModal from "../../../shared/components/ui-modal/UiModal";
 import CreateShortenLinkForm from "../components/CreateShortenLinkForm";
+import { getUniqueSlug } from "../../../../services/api";
 
 const UrlShortnerList = ({ columns, dataSource }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shortSlug, setSlug] = useState("");
   const navigate = useNavigate();
 
-  const handleOpen = () => setIsModalOpen(true);
+  const handleOpen = async () => {
+    try {
+      const data = await getUniqueSlug();
+      setSlug(data.shortId);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   const handleClose = () => setIsModalOpen(false);
   const handleSave = () => {
     handleClose();
@@ -86,7 +96,7 @@ const UrlShortnerList = ({ columns, dataSource }) => {
         onOk={handleSave}
         onCancel={handleClose}
       >
-        <CreateShortenLinkForm />
+        <CreateShortenLinkForm urlSlug={shortSlug} />
       </UiModal>
     </>
   );

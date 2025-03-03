@@ -35,16 +35,16 @@ const Sidebar = ({ collapsed, setTitle }) => {
     },
   ];
   const menuItemsBottom = [
-    {
-      label: <Link to={ROUTES.HELP.URL}>{ROUTES.HELP.LABEL}</Link>,
-      key: "3",
-      icon: <CircleHelp />,
-    },
-    {
-      label: <Link to={ROUTES.SETTINGS.URL}>{ROUTES.SETTINGS.LABEL}</Link>,
-      key: "4",
-      icon: <Settings />,
-    },
+    // {
+    //   label: <Link to={ROUTES.HELP.URL}>{ROUTES.HELP.LABEL}</Link>,
+    //   key: "3",
+    //   icon: <CircleHelp />,
+    // },
+    // {
+    //   label: <Link to={ROUTES.SETTINGS.URL}>{ROUTES.SETTINGS.LABEL}</Link>,
+    //   key: "4",
+    //   icon: <Settings />,
+    // },
     {
       label: <Link to={ROUTES.PROFILE.URL}>{ROUTES.PROFILE.LABEL}</Link>,
       key: "5",

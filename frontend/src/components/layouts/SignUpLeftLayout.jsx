@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import InputField from "../ui/Input.jsx";
-import { Button, Flex } from "antd";
+import { Button, Flex, Form, Input } from "antd";
 import { Typography } from "antd";
 
 const { Title, Paragraph } = Typography;
 
-const SignUpLeftLayout = () => {
+const SignUpLeftLayout = ({ onSignUp }) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <Flex align="start" justify="center" className="left-panel" vertical>
       <div className="form-container">
@@ -21,14 +25,24 @@ const SignUpLeftLayout = () => {
             run and grow your business.
           </Paragraph>
         </Typography>
-        <form>
-          <InputField label="Name" required />
-          <InputField label="Email" required />
-          <InputField label="Password" type="password" showPassword required />
-          <Button type="primary" className="btn-primary" href="">
+        <Form layout="vertical">
+          <Form.Item label="Full Name" name="name">
+            <Input type="email" value={name} onChange={setName} required />
+          </Form.Item>
+          <Form.Item label="Email" name="email">
+            <Input type="email" value={email} onChange={setEmail} required />
+          </Form.Item>
+          <Form.Item label="Password" name="password">
+            <Input.Password value={password} onChange={setPassword} required />
+          </Form.Item>
+          <Button
+            type="primary"
+            className="btn-primary"
+            onClick={onSignUp(name, email, password)}
+          >
             Sign Up
           </Button>
-        </form>
+        </Form>
       </div>
     </Flex>
   );

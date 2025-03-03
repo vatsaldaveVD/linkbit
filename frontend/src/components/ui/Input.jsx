@@ -10,6 +10,7 @@ const InputField = ({
   placeholder = "",
   disablePasswordToggle = false, // New prop to disable eye icon
   disableCriteriaCheck = false, // New prop to disable criteria check
+  showTooltip = true,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -46,8 +47,10 @@ const InputField = ({
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setTooltipVisible(true)}
           onBlur={() => setTooltipVisible(false)}
+          value={value}
         />
         {type === "password" &&
+          showTooltip &&
           !disableCriteriaCheck && ( // Hide criteria if disabled
             <Tooltip
               title={
