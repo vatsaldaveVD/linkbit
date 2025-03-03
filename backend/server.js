@@ -10,8 +10,6 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsdoc = require("swagger-jsdoc");
 const urlMetadata = require("url-metadata");
 
 const app = express();
@@ -36,7 +34,6 @@ const User = require("./model/user.model");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(requestIp.mw());
-app.use(require("cors")());
 const detector = new DeviceDetector({
   clientIndexes: true,
   deviceIndexes: true,
@@ -57,9 +54,6 @@ const options = {
   },
   apis: ["./index.js"],
 };
-
-const specs = swaggerJsdoc(options);
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.get("/", (req, res) => {
   res.send(`
