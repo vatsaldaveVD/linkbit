@@ -638,17 +638,27 @@ app.get("/:shortId", async (req, res) => {
     const userAgent = useragent.parse(req.headers["user-agent"]);
     const result = detector.detect(req.headers["user-agent"]);
 
+    const isLocal = false;
     const ip = req.clientIp;
-    const geo = geoip.lookup(ip);
-    const parser = new UAParser(req.headers["user-agent"]);
-    const browser = parser.getBrowser();
-    const os = parser.getOS();
+    if (req.clientIp === "::1" || req.clientIp === "127.0.0.1") {
+      isLocal = true;
+    }
+    try {
+      const geo = geoip.lookup(ip);
+      const parser = new UAParser(req.headers["user-agent"]);
+      const browser = parser.getBrowser();
+      const os = parser.getOS();
+    } catch (error) {
+      console.error("Client Data Prasing Error:", error);
+    }
 
     link.analyticLogs.push({
       timezone:
-        `UTC ${ct.getTimezone(geo.timezone).utcOffsetStr}` || geo.timezone,
-      ipAddress: ip,
-      country: geo ? geo.country : "Unknown",
+        `UTC ${ct.getTimezone(geo.timezone).utcOffsetStr}` ||
+        geo.timezone ||
+        "Unkown",
+      ipAddress: isLocal ? "Localhost" : ip,
+      country: isLocal ? "Localhost" : geo ? geo.country : "Unknown",
       referer: req.headers.referer || "Unknown",
       browser: result.client.name || browser.name || "Unknown",
       browserVersion: result.client.version || browser.version || "Unknown",
