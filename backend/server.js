@@ -330,7 +330,6 @@ app.post("/shorten", async (req, res) => {
       metadata = Object.fromEntries(
         Object.entries(meta).filter(([_, v]) => v != null)
       );
-      console.log(metadata);
     } catch (metadataFetcewMethError) {
       console.error("Error fetching metadata:", metadataFetchError);
     }
@@ -358,7 +357,6 @@ app.post("/shorten", async (req, res) => {
       urlHitCount: 0,
       metadata: metadata,
     });
-    console.log(newLink);
     await newLink.save();
 
     res.json({ shortUrl });
@@ -639,7 +637,7 @@ app.get("/:shortId", async (req, res) => {
 
     const userAgent = useragent.parse(req.headers["user-agent"]);
     const result = detector.detect(req.headers["user-agent"]);
-    console.log("Result Parse: ", result);
+
     const ip = req.clientIp;
     const geo = geoip.lookup(ip);
     const parser = new UAParser(req.headers["user-agent"]);
