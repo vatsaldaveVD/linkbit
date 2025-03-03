@@ -12,12 +12,13 @@ const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
 
 const app = express();
-const PORT = process.env.PORT || 5050;
+const port = process.env.PORT || 5050;
 dotenv.config();
 
 const mongoURI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT;
 const REFRESH_SECRET = process.env.REFRESH;
+let refreshTokens = {};
 
 mongoose
   .connect(mongoURI, {})
@@ -44,24 +45,22 @@ const detector = new DeviceDetector({
 
 app.post("/signup", async (req, res) => {
   console.log("Signup Request Body:", req.body);
-  const { username, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-  if (!username || !email || !password) {
+  if (!name || !email || !password) {
     return res
       .status(400)
-      .json({ error: "Username, email, and password are required" });
+      .json({ error: "Name, Email, and Password are required" });
   }
 
   try {
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists" });
+      return res.status(400).json({ error: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
     res.status(201).json({ message: "User created successfully" });
@@ -75,22 +74,18 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   console.log("Login Request Body:", req.body);
-  const { username, email, password } = req.body;
+  const { email, password } = req.body;
 
-  if ((!username && !email) || !password) {
-    return res.send("Username/email and password are required");
+  if (!email || !password) {
+    return res.send("Email and password are required");
   }
 
   try {
-    const user = await User.findOne({
-      $or: [{ username: username.toLowerCase() }, { email }],
-    });
+    const user = await User.findOne({ email });
     if (!user) {
       console.log("User not found");
       return res.send("Invalid credentials");
     }
-
-    console.log("Found User:", user);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     console.log("Password Match:", passwordMatch);
@@ -99,11 +94,9 @@ app.post("/login", async (req, res) => {
       return res.send("Invalid credentials");
     }
 
-    const accessToken = jwt.sign(
-      { userId: user._id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    const accessToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
+      expiresIn: "15m",
+    });
     const refreshToken = jwt.sign({ userId: user._id }, REFRESH_SECRET);
 
     refreshTokens.push(refreshToken);
@@ -112,7 +105,7 @@ app.post("/login", async (req, res) => {
       message: "Login successful!",
       accessToken,
       refreshToken,
-      username: user.username,
+      name: user.name,
       email: user.email,
     });
   } catch (error) {
@@ -148,7 +141,7 @@ app.post("/shorten", async (req, res) => {
   if (!userId) {
     return res
       .status(400)
-      .json({ error: "useremail required to create shorl URL" });
+      .json({ error: "Email required to create short URL" });
   }
 
   try {
