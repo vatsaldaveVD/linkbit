@@ -10,15 +10,19 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+const urlMetadata = require("url-metadata");
 
 const app = express();
 const port = process.env.PORT || 5050;
 dotenv.config();
 
+const PORT = process.env.PORT;
 const mongoURI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT;
 const REFRESH_SECRET = process.env.REFRESH;
-let refreshTokens = {};
+let refreshTokens = [];
 
 mongoose
   .connect(mongoURI, {})
@@ -43,32 +47,49 @@ const detector = new DeviceDetector({
   maxUserAgentSize: 500,
 });
 
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "URL Shortener API",
+      version: "1.0.0",
+      description: "API for shortening URLs and managing analytics",
+    },
+  },
+  apis: ["./index.js"],
+};
+
+const specs = swaggerJsdoc(options);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+
 app.post("/signup", async (req, res) => {
   console.log("Signup Request Body:", req.body);
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    return res
-      .status(400)
-      .json({ error: "Name, Email, and Password are required" });
+    return res.send("Name, email, and password are required");
   }
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      email,
+    });
     if (existingUser) {
-      return res.status(400).json({ error: "Email already exists" });
+      return res.send("Email already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+    const newUser = new User({
+      name: name.toLowerCase(),
+      email,
+      password: hashedPassword,
+    });
     await newUser.save();
 
-    res.status(201).json({ message: "User created successfully" });
+    res.redirect("/");
   } catch (error) {
-    console.error("Error signing up:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to create user", details: error.message });
+    console.error("Signup Error:", error);
+    res.send("Failed to create user");
   }
 });
 
@@ -130,10 +151,72 @@ app.post("/refresh", (req, res) => {
   });
 });
 
+app.post("/logout", (req, res) => {
+  const { refreshToken } = req.body;
+  refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+  res.send("Logged out successfully");
+});
+
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(404).json({ message: "User doesn't exist" });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User doesn't exist" });
+    res.json({ message: "Reset password link has been sent to your email" });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.send("Failed to send password reset email");
+  }
+});
+
+app.post("/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Email and new password are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+const authenticateUser = (req, res, next) => {
+  const token =
+    req.body.refreshToken ||
+    req.query.refreshToken ||
+    req.headers["x-access-token"];
+
+  if (!token) return res.status(401).json({ message: "Access denied" });
+
+  try {
+    const verify = jwt.verify(token, JWT_SECRET);
+    req.user = verify;
+    next();
+  } catch (error) {
+    console.error("Authentication Error:", error);
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 app.post("/shorten", async (req, res) => {
   const originalUrl = req.body.url;
   const userId = req.body.userEmail;
   const bodyShortId = req.body.shortId;
+  const metadata = req.body.metadata || {};
 
   if (!originalUrl) {
     return res.status(400).json({ error: "URL is required" });
@@ -146,6 +229,26 @@ app.post("/shorten", async (req, res) => {
 
   try {
     new URL(originalUrl);
+    if (Object.keys(metadata).length === 0) {
+      try {
+        const meta = await urlMetadata(originalUrl);
+        metadata = {
+          title: meta.title,
+          description: meta.description,
+          image: meta.image,
+          keywords: meta.keywords,
+          "og:image": meta["og:image"],
+          "og:title": meta["og:title"],
+          "og:description": meta["og:description"],
+        };
+
+        metadata = Object.fromEntries(
+          Object.entries(metadata).filter(([_, v]) => v != null)
+        );
+      } catch (metadataFetchError) {
+        console.error("Error fetching metadata:", metadataFetchError);
+      }
+    }
   } catch (error) {
     return res.status(400).json({ error: "Invalid URL" });
   }
@@ -170,6 +273,7 @@ app.post("/shorten", async (req, res) => {
       shortUrl,
       createdBy: userId,
       urlHitCount: 0,
+      metadata: metadata,
     });
     await newLink.save();
 
@@ -177,6 +281,95 @@ app.post("/shorten", async (req, res) => {
   } catch (error) {
     console.error("Error saving to MongoDB:", error);
     res.status(500).json({ error: "Failed to shorten URL" });
+  }
+});
+
+app.get("/top-performing", async (req, res) => {
+  try {
+    const links = await Link.find({}).sort({ urlHitCount: -1 }).limit(5);
+
+    if (!links || links.length === 0) {
+      return res.status(404).json({ error: "No URLs found for this user" });
+    }
+
+    res.json({ topUrls: links });
+  } catch (error) {
+    console.error("Error fetching top performing links:", error);
+    return res.status(500).json({ error: "Failed to fetch top URLs" });
+  }
+});
+
+app.get("/top-analtytics", async (req, res) => {
+  try {
+    const links = await Link.find({});
+
+    const totalLinks = links.length;
+    const totalClicks = links.reduce((sum, link) => sum + link.urlHitCount, 0);
+
+    const browserCounts = {};
+    const countryCounts = {};
+    const deviceCounts = { smartphone: 0, Tablet: 0, Desktop: 0 };
+
+    links.forEach((link) => {
+      link.analyticLogs.forEach((log) => {
+        browserCounts[log.browser] = (browserCounts[log.browser] || 0) + 1;
+        countryCounts[log.country] = (countryCounts[log.country] || 0) + 1;
+
+        if (log.deviceType) {
+          const deviceType =
+            log.deviceType.charAt(0).toUpperCase() + log.deviceType.slice(1);
+          if (deviceCounts.hasOwnProperty(deviceType)) {
+            deviceCounts[deviceType]++;
+          }
+        }
+      });
+    });
+
+    const timezoneCounts = {};
+    links.forEach((link) => {
+      link.analyticLogs.forEach((log) => {
+        timezoneCounts[log.timezone] = (timezoneCounts[log.timezone] || 0) + 1;
+      });
+    });
+
+    const sortedTimezones = Object.entries(timezoneCounts).sort(
+      (a, b) => b[1] - a[1]
+    );
+
+    const top5Timezones = {};
+    const otherTimezonesCount = sortedTimezones.reduce(
+      (sum, [timezone, count], index) => {
+        if (index < 5) {
+          top5Timezones[timezone] = count;
+          return sum;
+        }
+        return sum + count;
+      },
+      0
+    );
+
+    const timezoneStats = {
+      ...top5Timezones,
+      Others: otherTimezonesCount,
+    };
+
+    const topBrowser =
+      Object.entries(browserCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      "Unknown";
+
+    res.json({
+      basicStats: {
+        "No. of Short Links": totalLinks,
+        "Total no of Click": totalClicks,
+        "Top Browser Use": topBrowser,
+      },
+      countryStats: countryCounts,
+      deviceStats: deviceCounts,
+      "Top Timezone": timezoneStats,
+    });
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
   }
 });
 
@@ -205,6 +398,11 @@ app.get("/top-performing/:userEmail", async (req, res) => {
 
 app.get("/top-analtytics/:userEmail", async (req, res) => {
   try {
+    const userEmail = req.params.userEmail;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: "User email is required" });
+    }
     const links = await Link.find({ createdBy: req.params.userEmail });
 
     const totalLinks = links.length;
@@ -329,7 +527,6 @@ app.get("/links/:userEmail", async (req, res) => {
   }
 });
 
-// Get shortId
 app.get("/shortId", async (req, res) => {
   do {
     shortId = shortid.generate();
@@ -353,6 +550,7 @@ app.get("/:shortId", async (req, res) => {
       return res.status(404).json({ error: "Short URL not found", url: url });
     }
 
+    const metadata = link.metadata;
     link.urlHitCount++;
 
     const userAgent = useragent.parse(req.headers["user-agent"]);
@@ -379,7 +577,9 @@ app.get("/:shortId", async (req, res) => {
     });
 
     await link.save();
-    res.redirect(link.originalUrl);
+    const redirectUrl = new URL(link.originalUrl);
+    redirectUrl.searchParams.set("metadata", JSON.stringify(metadata)); //Encode the metadata.
+    res.redirect(redirectUrl.toString());
   } catch (error) {
     console.error("Error fetching/updating from MongoDB:", error);
     res.status(500).json({ error: "Failed to redirect" });
@@ -445,62 +645,6 @@ app.delete("/:shortId", async (req, res) => {
   }
 });
 
-app.get("/auth_form", (req, res) => {
-  res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-          <title>Authentication Demo</title>
-      </head>
-      <body>
-          <h1>Sign Up</h1>
-          <form method="POST" action="/signup">
-              <label for="signupUsername">Username:</label><br>
-              <input type="text" id="signupUsername" name="username" required><br><br>
-
-              <label for="signupEmail">Email:</label><br>
-              <input type="email" id="signupEmail" name="email" required><br><br>
-
-              <label for="signupPassword">Password:</label><br>
-              <input type="password" id="signupPassword" name="password" required><br><br>
-
-              <button type="submit">Sign Up</button>
-          </form>
-
-          <h1>Login</h1>
-          <form method="POST" action="/login">
-              <label for="loginUsername">Username or Email:</label><br>
-              <input type="text" id="loginUsername" name="username" required><br><br>
-
-              <label for="loginPassword">Password:</label><br>
-              <input type="password" id="loginPassword" name="password" required><br><br>
-
-              <button type="submit">Login</button>
-          </form>
-      </body>
-      </html>
-  `);
-});
-
-app.get("/", (req, res) => {
-  res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>URL Shortener</title>
-        </head>
-        <body>
-            <h1>URL Shortener</h1>
-            <form method="POST" action="/shorten">
-                <input type="url" name="url" placeholder="Enter URL" required><br><br>
-                <input type="email" name="userEmail" placeholder="Enter email" required><br><br>
-                <button type="submit">Shorten</button>
-            </form>
-        </body>
-        </html>
-    `);
-});
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });

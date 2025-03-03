@@ -77,6 +77,7 @@ const linkSchema = new mongoose.Schema(
         type: analyticLogsSchema,
       },
     ],
+    metadata: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
   {
     timestamps: true,
