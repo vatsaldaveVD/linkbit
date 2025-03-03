@@ -10,11 +10,13 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const DeviceDetector = require("node-device-detector");
 const ct = require("countries-and-timezones");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
 
 const app = express();
-const PORT = process.env.PORT || 5050;
 dotenv.config();
 
+const PORT = process.env.PORT;
 const mongoURI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT;
 const REFRESH_SECRET = process.env.REFRESH;
@@ -42,6 +44,21 @@ const detector = new DeviceDetector({
   deviceInfo: false,
   maxUserAgentSize: 500,
 });
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "URL Shortener API",
+      version: "1.0.0",
+      description: "API for shortening URLs and managing analytics",
+    },
+  },
+  apis: ["./index.js"],
+};
+
+const specs = swaggerJsdoc(options);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.get("/", (req, res) => {
   res.send(`
@@ -165,7 +182,6 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// Login Route
 app.post("/login", async (req, res) => {
   console.log("Login Request Body:", req.body);
   const { username, email, password } = req.body;
@@ -214,7 +230,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Refresh tok
 app.post("/refresh", (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken || !refreshTokens.includes(refreshToken)) {
@@ -231,14 +246,12 @@ app.post("/refresh", (req, res) => {
   });
 });
 
-// Logout Route
 app.post("/logout", (req, res) => {
   const { refreshToken } = req.body;
   refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
   res.send("Logged out successfully");
 });
 
-// forgot password
 app.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(404).json({ message: "User doesn't exist" });
@@ -252,7 +265,6 @@ app.post("/forgot-password", async (req, res) => {
   }
 });
 
-//reset-password
 app.post("/reset-password", async (req, res) => {
   try {
     const { email, newPassword } = req.body;
@@ -299,6 +311,7 @@ app.post("/shorten", async (req, res) => {
   const originalUrl = req.body.url;
   const userId = req.body.userEmail;
   const bodyShortId = req.body.shortId;
+  const metadata = req.body.metadata || {};
 
   if (!originalUrl) {
     return res.status(400).json({ error: "URL is required" });
@@ -335,6 +348,7 @@ app.post("/shorten", async (req, res) => {
       shortUrl,
       createdBy: userId,
       urlHitCount: 0,
+      metadata: metadata,
     });
     await newLink.save();
 
@@ -459,6 +473,11 @@ app.get("/top-performing/:userEmail", async (req, res) => {
 
 app.get("/top-analtytics/:userEmail", async (req, res) => {
   try {
+    const userEmail = req.params.userEmail;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: "User email is required" });
+    }
     const links = await Link.find({ createdBy: req.params.userEmail });
 
     const totalLinks = links.length;
@@ -583,7 +602,6 @@ app.get("/links/:userEmail", async (req, res) => {
   }
 });
 
-// Get shortId
 app.get("/shortId", async (req, res) => {
   do {
     shortId = shortid.generate();
@@ -607,6 +625,7 @@ app.get("/:shortId", async (req, res) => {
       return res.status(404).json({ error: "Short URL not found", url: url });
     }
 
+    const metadata = link.metadata;
     link.urlHitCount++;
 
     const userAgent = useragent.parse(req.headers["user-agent"]);
@@ -633,7 +652,9 @@ app.get("/:shortId", async (req, res) => {
     });
 
     await link.save();
-    res.redirect(link.originalUrl);
+    const redirectUrl = new URL(link.originalUrl);
+    redirectUrl.searchParams.set("metadata", JSON.stringify(metadata)); //Encode the metadata.
+    res.redirect(redirectUrl.toString());
   } catch (error) {
     console.error("Error fetching/updating from MongoDB:", error);
     res.status(500).json({ error: "Failed to redirect" });
@@ -699,6 +720,6 @@ app.delete("/:shortId", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
